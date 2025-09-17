@@ -49,3 +49,44 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+    
+    
+name: Convert Word to Markdown and organize posts
+
+on:
+  push:
+    paths:
+      - "scripts/*.docx"
+
+jobs:
+  convert:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Convert .docx to Markdown with folders
+        run: |
+          for file in scripts/*.docx; do
+            filename=$(basename "$file" .docx)
+            # Pega a data do commit ou usa a data atual
+            year=$(date +%Y)
+            month=$(date +%m)
+            day=$(date +%d)
+            # Cria pasta _posts/AAAA/MM/DD se não existir
+            mkdir -p "_posts/$year/$month/$day"
+            # Converte para Markdown e cria front matter
+            echo "---" > "_posts/$year/$month/$day/$filename.md"
+            echo "layout: post" >> "_posts/$year/$month/$day/$filename.md"
+            echo "title: \"$filename\"" >> "_posts/$year/$month/$day/$filename.md"
+            echo "date: $(date +%Y-%m-%dT%H:%M:%S%z)" >> "_posts/$year/$month/$day/$filename.md"
+            echo "categories: [blog]" >> "_posts/$year/$month/$day/$filename.md"
+            echo "---" >> "_posts/$year/$month/$day/$filename.md"
+            pandoc "$file" -f docx -t markdown >> "_posts/$year/$month/$day/$filename.md"
+          done
+
+      - name: Commit converted files
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "actions@github.com"
+          git add _posts/
+          git commit -m "Convert Word posts to Markdown and organize folders"
+          git push
