@@ -1,4 +1,4 @@
-# Pedroisonmycomputer - based on Jeykell
+# My Portfolio - Pedro Daniel
 
 If you want to use this template for your blog, following these steps below.
 
